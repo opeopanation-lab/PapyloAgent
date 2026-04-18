@@ -11,7 +11,8 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  writeBatch
 } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -224,6 +225,26 @@ export function useNationAgent(modelId: string = "gemini-3-flash-preview") {
     await deleteDoc(taskRef);
   };
 
+  const batchUpdateTasks = async (taskIds: string[], updates: Partial<Task>) => {
+    if (!currentUser || taskIds.length === 0) return;
+    const batch = writeBatch(db);
+    taskIds.forEach(id => {
+      const ref = doc(db, "users", currentUser.uid, "tasks", id);
+      batch.update(ref, updates as any);
+    });
+    await batch.commit();
+  };
+
+  const batchDeleteTasks = async (taskIds: string[]) => {
+    if (!currentUser || taskIds.length === 0) return;
+    const batch = writeBatch(db);
+    taskIds.forEach(id => {
+      const ref = doc(db, "users", currentUser.uid, "tasks", id);
+      batch.delete(ref);
+    });
+    await batch.commit();
+  };
+
   const sendMessage = useCallback(async (text: string, imageBase64?: string) => {
     if (!text.trim() && !imageBase64 || !currentUser) return;
 
@@ -343,6 +364,8 @@ export function useNationAgent(modelId: string = "gemini-3-flash-preview") {
     sessionSettings,
     toggleTTS,
     toggleTaskStatus,
-    deleteTask
+    deleteTask,
+    batchUpdateTasks,
+    batchDeleteTasks
   };
 }

@@ -38,7 +38,10 @@ import {
   Download,
   Terminal,
   RefreshCcw,
-  UserCircle
+  UserCircle,
+  Copy,
+  CheckSquare,
+  Square
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useNationAgent, Message, Task } from "./hooks/useNationAgent";
@@ -92,7 +95,9 @@ export default function App() {
     sessionSettings,
     toggleTTS,
     toggleTaskStatus,
-    deleteTask
+    deleteTask,
+    batchUpdateTasks,
+    batchDeleteTasks
   } = useNationAgent(selectedModelId);
   
   const [activeScreen, setActiveScreen] = useState<Screen>("chat");
@@ -104,6 +109,9 @@ export default function App() {
   const [notification, setNotification] = useState<{ message: string, type: "error" | "warning" | "success" } | null>(null);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -132,6 +140,36 @@ export default function App() {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setNotification({ message: "Sovereign platform authorized and installed.", type: "success" });
+    }
+    setDeferredPrompt(null);
+  };
 
   // Auto-scroll on chat screen
   useEffect(() => {
@@ -209,6 +247,45 @@ export default function App() {
     setNotification({ message: "Local intelligence vault exported.", type: "success" });
   };
 
+  const toggleTaskSelection = (id: string) => {
+    setSelectedTaskIds(prev => 
+      prev.includes(id) ? prev.filter(tid => tid !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchComplete = async () => {
+    if (selectedTaskIds.length === 0) return;
+    try {
+        await batchUpdateTasks(selectedTaskIds, { status: "completed" });
+        setNotification({ message: `${selectedTaskIds.length} directives marked as completed.`, type: "success" });
+        setSelectedTaskIds([]);
+    } catch (err) {
+        setNotification({ message: "Batch status update failed.", type: "error" });
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedTaskIds.length === 0) return;
+    if (!confirm(`Permanently delete ${selectedTaskIds.length} operational directives?`)) return;
+    try {
+        await batchDeleteTasks(selectedTaskIds);
+        setNotification({ message: `${selectedTaskIds.length} directives purged from vault.`, type: "success" });
+        setSelectedTaskIds([]);
+    } catch (err) {
+        setNotification({ message: "Batch purge failed.", type: "error" });
+    }
+  };
+
+  const toggleSelectAllTasks = () => {
+    if (selectedTaskIds.length === tasks.length) {
+        setSelectedTaskIds([]);
+    } else {
+        setSelectedTaskIds(tasks.map(t => t.id));
+    }
+  };
+
+  const isBatchMode = selectedTaskIds.length > 0;
+
   const toggleVoice = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -277,7 +354,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#0F172A] text-[#F1F5F9] font-sans selection:bg-[#38BDF8] selection:text-[#0F172A]">
+    <div className="flex flex-col h-screen w-full max-w-[480px] mx-auto bg-[#0F172A] text-[#F1F5F9] font-sans selection:bg-[#38BDF8] selection:text-[#0F172A] shadow-2xl relative overflow-hidden border-x border-[#334155]/20">
       <AnimatePresence>
         {notification && <Alert message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
       </AnimatePresence>
@@ -325,9 +402,12 @@ export default function App() {
                 <div>
                   <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#94A3B8] font-bold mb-3 flex items-center justify-between">
                     Operator
-                    <span className="text-[9px] text-[#38BDF8] flex items-center gap-1">
-                        <div className="w-1 h-1 rounded-full bg-[#38BDF8] animate-ping" />
-                        Online
+                    <span className={cn(
+                        "text-[9px] flex items-center gap-1",
+                        isOnline ? "text-[#38BDF8]" : "text-red-400"
+                    )}>
+                        <div className={cn("w-1 h-1 rounded-full", isOnline ? "bg-[#38BDF8] animate-ping" : "bg-red-400")} />
+                        {isOnline ? "Online" : "Terminated"}
                     </span>
                   </h3>
                   <div className="flex items-center gap-4 bg-[#0F172A]/50 rounded-2xl p-4 border border-[#334155] group relative overflow-hidden">
@@ -647,7 +727,7 @@ export default function App() {
                       { label: "Memory Density", value: `${(messages.length / 1000).toFixed(2)} TB`, icon: Database },
                       { label: "Neural Response", value: `${stats.latency}ms`, icon: Zap },
                       { icon: Activity, label: "Cognitive Load", value: `${stats.neuralLoad}%` },
-                      { icon: Globe, label: "Node Connection", value: "Primary: EU_LON", color: "text-[#38BDF8]" },
+                      { icon: Globe, label: "Uplink Status", value: isOnline ? "Secure" : "Severed", color: isOnline ? "text-[#38BDF8]" : "text-red-400" },
                   ].map((stat, i) => (
                       <div key={i} className="bg-[#1E293B] border border-[#334155] rounded-3xl p-5 flex flex-col gap-2 group transition-all hover:border-[#38BDF8]/40">
                           <div className="flex items-center justify-between">
@@ -705,19 +785,64 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
-              className="absolute inset-0 overflow-y-auto px-6 py-8 grid-technical"
+              className="absolute inset-0 overflow-y-auto px-6 py-8 grid-technical no-scrollbar"
             >
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold flex items-center gap-3">
-                  <ListTodo className="w-6 h-6 text-[#38BDF8]" />
-                  Operational Directives
-                </h2>
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-bold flex items-center gap-3">
+                    <ListTodo className="w-6 h-6 text-[#38BDF8]" />
+                    Operational Directives
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={toggleSelectAllTasks}
+                      className="text-[10px] font-mono text-[#475569] uppercase tracking-widest hover:text-[#38BDF8] transition-colors"
+                    >
+                      {selectedTaskIds.length === tasks.length && tasks.length > 0 ? "Deselect All" : "Select All"}
+                    </button>
+                    {selectedTaskIds.length > 0 && (
+                      <span className="text-[10px] font-mono text-[#38BDF8] uppercase tracking-widest">
+                        ({selectedTaskIds.length} Selected)
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <div className="px-3 py-1 bg-[#1E293B] border border-[#334155] rounded-full text-[10px] font-mono text-[#38BDF8] uppercase tracking-widest">
                     {tasks.filter(t => t.status === "pending").length} Pending
                 </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Batch Action Bar */}
+              <AnimatePresence>
+                {selectedTaskIds.length > 0 && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    className="flex items-center justify-between gap-4 mb-6 p-4 bg-[#38BDF8]/5 border border-[#38BDF8]/20 rounded-2xl sticky top-0 z-10 backdrop-blur-md"
+                  >
+                    <span className="text-xs font-bold text-[#38BDF8]">Batch Operations Active</span>
+                    <div className="flex items-center gap-2">
+                       <button 
+                          onClick={handleBatchComplete}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-[#38BDF8]/20 transition-all"
+                       >
+                          <CheckSquare className="w-4 h-4" />
+                          Complete
+                       </button>
+                       <button 
+                          onClick={handleBatchDelete}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-red-500/20 transition-all"
+                       >
+                          <Trash2 className="w-4 h-4" />
+                          Purge
+                       </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-4 pb-20">
                 {tasks.length > 0 ? (
                   tasks.map((task) => (
                     <motion.div
@@ -727,19 +852,20 @@ export default function App() {
                       animate={{ opacity: 1, y: 0 }}
                       className={cn(
                         "p-4 border rounded-2xl transition-all relative group bg-[#1E293B]/60 backdrop-blur-md",
-                        task.status === "completed" ? "border-[#334155] opacity-50" : "border-[#334155] hover:border-[#38BDF8]/40"
+                        task.status === "completed" ? "border-[#334155] opacity-50" : "border-[#334155] hover:border-[#38BDF8]/40",
+                        selectedTaskIds.includes(task.id) && "ring-2 ring-[#38BDF8] border-[#38BDF8]"
                       )}
+                      onClick={() => toggleTaskSelection(task.id)}
                     >
-                      <div className="flex items-start gap-4">
-                        <button 
-                          onClick={() => toggleTaskStatus(task.id, task.status)}
-                          className={cn(
-                             "mt-0.5 shrink-0 transition-colors",
-                             task.status === "completed" ? "text-[#22C55E]" : "text-[#94A3B8] hover:text-[#38BDF8]"
-                          )}
-                        >
-                          {task.status === "completed" ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                        </button>
+                      <div className="flex items-start gap-4 cursor-pointer">
+                        <div className="mt-0.5 shrink-0 transition-colors">
+                           {selectedTaskIds.includes(task.id) ? (
+                               <CheckSquare className="w-5 h-5 text-[#38BDF8]" />
+                           ) : (
+                               <Square className="w-5 h-5 text-[#475569]" />
+                           )}
+                        </div>
+
                         <div className="flex-1 min-w-0">
                           <p className={cn(
                             "text-[13px] leading-relaxed transition-all",
@@ -758,14 +884,14 @@ export default function App() {
                                 <span className="text-[8px] font-mono uppercase text-[#94A3B8]">{task.priority}</span>
                              </div>
                              <span className="text-[8px] font-mono text-[#475569] uppercase">{task.createdAt.toLocaleDateString()}</span>
+                             {task.status === "completed" && (
+                               <div className="flex items-center gap-1 text-[#22C55E]">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span className="text-[8px] font-mono uppercase tracking-widest">Completed</span>
+                               </div>
+                             )}
                           </div>
                         </div>
-                        <button 
-                            onClick={() => deleteTask(task.id)}
-                            className="p-2 text-[#475569] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </motion.div>
                   ))
@@ -799,6 +925,31 @@ export default function App() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* PWA Install Action */}
+                <AnimatePresence>
+                  {deferredPrompt && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="col-span-full"
+                    >
+                      <button 
+                        onClick={handleInstallApp}
+                        className="w-full bg-[#38BDF8]/10 border border-[#38BDF8]/40 rounded-3xl p-6 flex flex-col items-center gap-4 group hover:bg-[#38BDF8]/20 transition-all"
+                      >
+                         <div className="p-4 bg-[#38BDF8]/20 rounded-full group-hover:scale-110 transition-transform">
+                            <Download className="w-8 h-8 text-[#38BDF8]" />
+                         </div>
+                         <div className="text-center">
+                            <p className="text-sm font-bold text-white uppercase tracking-widest">Authorize Sovereign PWA Installation</p>
+                            <p className="text-[10px] text-[#94A3B8] font-mono mt-1">Enable standalone encrypted operational terminal</p>
+                         </div>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Bento Card: Intelligence */}
                 <div className="col-span-full bg-[#1E293B] border border-[#334155] rounded-3xl p-6 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">

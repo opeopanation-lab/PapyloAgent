@@ -17,7 +17,7 @@
 }
 
 body {
-  @apply bg-[#0F172A] text-[#F1F5F9] antialiased font-sans overflow-hidden;
+  @apply bg-[#020617] text-[#F1F5F9] antialiased font-sans overflow-hidden min-h-screen flex items-center justify-center;
 }
 
 * {
