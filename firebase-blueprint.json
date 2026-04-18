@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System operator profile and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "selectedModelId": { "type": "string" }
+          }
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "Transmission": {
+      "title": "Transmission",
+      "description": "Secure record of communication between operator and agent.",
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "modelId": { "type": "string" },
+        "attachments": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["role", "content", "timestamp"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Extracted directive or action item from transmissions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "cancelled"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "sourceTransmissionId": { "type": "string" }
+      },
+      "required": ["title", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private profile data for each operator."
+    },
+    "/users/{userId}/transmissions/{transmissionId}": {
+      "schema": "Transmission",
+      "description": "Encrypted logs of specific user transmissions."
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Operational directives for the operator."
+    }
+  }
+}

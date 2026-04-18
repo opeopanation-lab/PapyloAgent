@@ -1,0 +1,6 @@
+{
+  "name": "Nation Agent",
+  "description": "A powerful mobile AI assistant designed for productivity and strategic insights. Your personal sovereign agent.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": []
+}

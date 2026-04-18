@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --color-bg: #0F172A;
+  --color-card-bg: #1E293B;
+  --color-accent: #38BDF8;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-border: #334155;
+  --color-success: #22C55E;
+}
+
+body {
+  @apply bg-[#0F172A] text-[#F1F5F9] antialiased font-sans overflow-hidden;
+}
+
+* {
+  @apply selection:bg-[#38BDF8] selection:text-[#0F172A];
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mask-scroll-fade {
+  mask-image: linear-gradient(to bottom, transparent, black 5%, black 90%, transparent);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+@layer utilities {
+  .grid-technical {
+    background-image: 
+      linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+}
+
