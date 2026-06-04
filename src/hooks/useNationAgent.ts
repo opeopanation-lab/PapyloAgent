@@ -174,7 +174,7 @@ export function useNationAgent(modelId: string = "gemini-3-flash-preview") {
         setMessages([{
           id: "initial",
           role: "assistant",
-          content: "Nation Agent active. Establish directive.",
+          content: "OpenClaw active. Establish directive.",
           timestamp: new Date()
         }]);
       } else {

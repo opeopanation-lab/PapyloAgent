@@ -110,8 +110,8 @@ export default function App() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -142,7 +142,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
@@ -335,7 +335,7 @@ export default function App() {
             <div className="w-16 h-16 bg-[#1E293B] border border-[#334155] rounded-3xl flex items-center justify-center mx-auto shadow-2xl">
               <Shield className="w-8 h-8 text-[#38BDF8]" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white uppercase">Nation Agent</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white uppercase">OpenClaw</h1>
             <p className="text-sm text-[#94A3B8] font-mono leading-relaxed">Secure communication terminal. Establish operator identity to begin mission transcripts.</p>
           </div>
 
@@ -486,7 +486,7 @@ export default function App() {
           </button>
           <div className="flex flex-col">
             <h1 className="text-sm font-bold tracking-widest bg-gradient-to-r from-white to-[#64748B] bg-clip-text text-transparent uppercase">
-              Nation Agent
+              OpenClaw
             </h1>
             <div className="flex items-center gap-1.5">
                <div className="w-1 h-1 rounded-full bg-[#22C55E] animate-pulse" />

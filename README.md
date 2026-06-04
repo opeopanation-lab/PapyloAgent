@@ -15,6 +15,12 @@ View your app in AI Studio: https://ai.studio/apps/a0624aa8-2057-477c-88a0-a4293
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set `VITE_GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+### Mobile and PWA setup
+
+- The app is optimized for mobile-first use and supports install prompts on supported browsers.
+- For local testing, open the app in a Chromium-based mobile browser or device emulator.
+- Ensure your `.env.local` includes `VITE_GEMINI_API_KEY` so the OpenClaw AI setup can initialize properly.
