@@ -391,7 +391,7 @@ export default function App() {
                   >
                     <Shield className="w-5 h-5 text-[#38BDF8]" />
                   </motion.div>
-                  <span className="font-mono text-xs tracking-widest uppercase font-bold text-[#94A3B8]">Nation Core</span>
+                  <span className="font-mono text-xs tracking-widest uppercase font-bold text-[#94A3B8]">OpenClaw Core</span>
                 </div>
                 <button onClick={() => setIsSidebarOpen(false)}>
                   <X className="w-5 h-5 text-[#94A3B8] hover:text-white transition-colors" />
