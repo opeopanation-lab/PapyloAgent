@@ -56,7 +56,7 @@ const extractTaskTool: FunctionDeclaration = {
   }
 };
 
-export function useNationAgent(modelId: string = "gemini-3-flash-preview") {
+export function useOpenClawAgent(modelId: string = "gemini-3-flash-preview") {
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isTyping, setIsTyping] = useState(false);

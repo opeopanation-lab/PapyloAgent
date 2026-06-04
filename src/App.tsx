@@ -44,7 +44,7 @@ import {
   Square
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { useNationAgent, Message, Task } from "./hooks/useNationAgent";
+import { useOpenClawAgent, Message, Task } from "./hooks/useOpenClawAgent";
 import { cn } from "./lib/utils";
 import { auth, signInWithGoogle } from "./lib/firebase";
 import { signOut, updateProfile } from "firebase/auth";
@@ -98,7 +98,7 @@ export default function App() {
     deleteTask,
     batchUpdateTasks,
     batchDeleteTasks
-  } = useNationAgent(selectedModelId);
+  } = useOpenClawAgent(selectedModelId);
   
   const [activeScreen, setActiveScreen] = useState<Screen>("chat");
   const [inputText, setInputText] = useState("");
