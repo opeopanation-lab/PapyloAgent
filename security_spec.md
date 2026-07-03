@@ -1,4 +1,4 @@
-# Security Specification: Nation Agent
+# Security Specification: OpenClaw
 
 ## Data Invariants
 1. **Sovereign Isolation**: An operator can only read and write their own data. No cross-user access is permitted under any circumstances.
