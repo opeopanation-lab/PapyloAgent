@@ -1,8 +1,10 @@
 {
-  "name": "react-example",
+  "name": "papyloagent-papylinux",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "PapyloAgent - OPA NATION's sovereign AI assistant for Papylinux platform",
+  "author": "OPA NATION",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",

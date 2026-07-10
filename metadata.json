@@ -1,6 +1,8 @@
 {
-  "name": "Nation Agent",
-  "description": "A powerful mobile AI assistant designed for productivity and strategic insights. Your personal sovereign agent.",
+  "name": "PapyloAgent",
+  "description": "Your AI assistant from OPA NATION. Secure, sovereign, and seamlessly integrated with Papylinux platform.",
   "requestFramePermissions": ["microphone"],
-  "majorCapabilities": []
+  "majorCapabilities": [],
+  "company": "OPA NATION",
+  "platform": "Papylinux"
 }
