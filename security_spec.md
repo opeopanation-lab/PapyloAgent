@@ -1,4 +1,4 @@
-# Security Specification: OpenClaw
+# Security Specification: PapyloAgent
 
 ## Data Invariants
 1. **Sovereign Isolation**: An operator can only read and write their own data. No cross-user access is permitted under any circumstances.
@@ -13,7 +13,7 @@
 4. **Cross-Tenant Write**: User A tries to write a log to User B's transmissions subcollection.
 5. **Schema Poisoning**: Attempt to inject a 2MB string into a log content field.
 6. **Role Escalation**: Attempt to set a `role: 'admin'` field on a user document (not defined in schema, but testing generic protection).
-7. **System ID Hijack**: Attempt to use `NATION_CORE` as a document ID via path variables.
+7. **System ID Hijack**: Attempt to use `OPA_NATION_CORE` as a document ID via path variables.
 8. **Orphaned Write**: Attempt to create a transmission without a corresponding user document (verified via exists).
 9. **Unverified Extraction**: Attempt to list all users' transmissions via a recursive query.
 10. **Field Injection**: Adding a `isVerified: true` field to the user settings.
