@@ -141,15 +141,13 @@ export function useOpenClawAgent(modelId: string = "gemini-3-flash-preview") {
     });
   };
 
-  // ... (rest of history listener same as before)
-
   // History Listener
   useEffect(() => {
     if (!currentUser) {
       setMessages([{
         id: "initial",
         role: "assistant",
-        content: "Identity required. Please establish session authentication.",
+        content: "Hello! I'm PapyloAgent from OPA NATION.",
         timestamp: new Date()
       }]);
       return;
@@ -174,7 +172,7 @@ export function useOpenClawAgent(modelId: string = "gemini-3-flash-preview") {
         setMessages([{
           id: "initial",
           role: "assistant",
-          content: "OpenClaw active. Establish directive.",
+          content: "Hello! I'm PapyloAgent from OPA NATION.",
           timestamp: new Date()
         }]);
       } else {
@@ -285,7 +283,7 @@ export function useOpenClawAgent(modelId: string = "gemini-3-flash-preview") {
             { role: "user", parts: currentParts }
         ],
         config: {
-            systemInstruction: SYSTEM_PROMPT + "\n\nCRITICAL: If the operator mentions a task, action item, or directive that needs to be tracked, use the 'extract_task' tool to record it into the secure vault. \n\nINTEL: You have access to real-time world intelligence. Use googleSearch to answer queries about current world events, technical specifications, or strategic data.",
+            systemInstruction: SYSTEM_PROMPT + "\n\nCRITICAL: If the operator mentions a task, action item, or directive that needs to be tracked, use the 'extract_task' tool to record it into the operational vault.",
             tools: [
                 { functionDeclarations: [extractTaskTool] },
                 { googleSearch: {} }
